@@ -1,55 +1,106 @@
-//
-// You can also make pointers to multiple items without using a slice.
-//
-//     var foo: [4]u8 = [4]u8{ 1, 2, 3, 4 };
-//     var foo_slice: []u8 = foo[0..];
-//     var foo_ptr: [*]u8 = &foo;
-//     var foo_slice_from_ptr: []u8 = foo_ptr[0..4];
-//
-// The difference between foo_slice and foo_ptr is that the slice has
-// a known length. The pointer doesn't. It is up to YOU to keep track
-// of the number of u8s foo_ptr points to!
-//
 const std = @import("std");
 
+// ============================================================================
+// 1. ENUM (with explicit backing integer type u8)
+// Giving the enum an explicit integer type guarantees its byte size, 
+// which is essential for packed structs and C interoperability.
+// ============================================================================
+pub const Agent = enum(u8) {
+    jett = 0,
+    reyna = 1,
+    gecko = 2,
+};
+
+// ============================================================================
+// 2. REGULAR STRUCT
+// A standard Zig struct. The compiler can reorder fields for optimal memory alignment.
+// ============================================================================
+pub const AgentStats = struct {
+    hp: u16,
+    shield: u16,
+};
+
+// ============================================================================
+// 3. EXTERN STRUCT (C-ABI Compatible)
+// Memory layout strictly follows C language alignment rules.
+// Use this when communicating with C libraries or OS APIs.
+// ============================================================================
+pub const ExternAgentHeader = extern struct {
+    magic_byte: u8 = 0xAA,
+    agent_type: Agent,
+};
+
+// ============================================================================
+// 4. PACKED STRUCT (Packet / Binary Wire Layout)
+// Guarantees exact bit placement without compiler padding. 
+// Perfect for network packets, binary file formats, or hardware protocols.
+// ============================================================================
+pub const Packet = packed struct {
+    packet_id: u16, // 2 bytes
+    agent: Agent, // 1 byte (u8)
+    is_alive: bool, // 1 byte (or bit-field depending on pack configuration)
+};
+
+// ============================================================================
+// 5. TAGGED UNION (union(enum))
+// A union where memory is shared across all fields, but tagged by the Agent enum.
+// The tag tracks which field is currently active safely at runtime.
+// ============================================================================
+pub const AgentPayload = union(Agent) {
+    jett: struct { dash_cooldown: f32 },
+    reyna: struct { soul_orbs: u8 },
+    gecko: AgentStats, // Uses our regular struct inside
+};
+
+// ============================================================================
+// MAIN FUNCTION & USAGE
+// ============================================================================
 pub fn main() void {
-    // Take a good look at the array type to which we're coercing
-    // the zen12 string (the REAL nature of strings will be
-    // revealed when we've learned some additional features):
-    const zen12: *const [21]u8 = "Memory is a resource.";
-    //
-    //   It would also have been valid to coerce to a slice:
-    //         const zen12: []const u8 = "...";
-    //
-    // Now let's turn this into a "many-item pointer":
-    const zen_manyptr: []const u8 = zen12;
+    // Basic Enum Usage
+    const current_agent = Agent.jett;
+    print(current_agent);
+    print(Agent.gecko);
 
-    // It's okay to access zen_manyptr just like an array or slice as
-    // long as you keep track of the length yourself!
-    //
-    // A "string" in Zig is a pointer to an array of const u8 values
-    // (or a slice of const u8 values, as we saw above). So, we could
-    // treat a "many-item pointer" of const u8 as a string as long as
-    // we can CONVERT IT TO A SLICE. (Hint: we do know the length!)
-    //
-    // Please fix this line so the print statement below can print it:
-    const zen12_string: []const u8 = zen_manyptr;
+    std.debug.print("\n--- Structural & Packet Usage ---\n", .{});
 
-    // Here's the moment of truth!
-    std.debug.print("{s}\n", .{zen12_string});
+    // Creating a Network Packet (packed struct)
+    const pkt = Packet{
+        .packet_id = 1001,
+        .agent = Agent.reyna,
+        .is_alive = true,
+    };
+    std.debug.print("Packed Packet Size: {d} bytes\n", .{@sizeOf(Packet)});
+    print(pkt.agent);
+
+    // Creating an Extern Struct (C-ABI layout)
+    const extern_hdr = ExternAgentHeader{
+        .agent_type = Agent.jett,
+    };
+    std.debug.print("Extern Header Magic: 0x{X}\n", .{extern_hdr.magic_byte});
+
+    // Tagged Union Usage (Pattern Matching via Switch)
+    const jett_payload = AgentPayload{ .jett = .{ .dash_cooldown = 12.5 } };
+    const gecko_payload = AgentPayload{ .gecko = .{ .hp = 100, .shield = 50 } };
+
+    processPayload(jett_payload);
+    processPayload(gecko_payload);
 }
-//
-// Are all of these pointer types starting to get confusing?
-//
-//     FREE ZIG POINTER CHEATSHEET! (Using u8 as the example type.)
-//   +---------------+----------------------------------------------+
-//   |  u8           |  one u8                                      |
-//   |  *u8          |  pointer to one u8                           |
-//   |  [2]u8        |  two u8s                                     |
-//   |  [*]u8        |  pointer to unknown number of u8s            |
-//   |  [*]const u8  |  pointer to unknown number of immutable u8s  |
-//   |  *[2]u8       |  pointer to an array of 2 u8s                |
-//   |  *const [2]u8 |  pointer to an immutable array of 2 u8s      |
-//   |  []u8         |  slice of u8s                                |
-//   |  []const u8   |  slice of immutable u8s                      |
-//   +---------------+----------------------------------------------+
+
+// Simple switch on the standalone enum
+fn print(who_is_there: Agent) void {
+    switch (who_is_there) {
+        .jett => std.debug.print("JETT HERE\n", .{}),
+        .reyna => std.debug.print("REYNA HERE\n", .{}),
+        else => std.debug.print("DONT KNOW WHO\n", .{}),
+    }
+}
+
+// Switching on a Tagged Union to extract payload data safely
+fn processPayload(payload: AgentPayload) void {
+    switch (payload) {
+        // Capture inner struct value into `jett_data`
+        .jett => |jett_data| std.debug.print("Jett dash cooldown: {d:.1}s\n", .{jett_data.dash_cooldown}),
+        .reyna => |reyna_data| std.debug.print("Reyna soul orbs: {d}\n", .{reyna_data.soul_orbs}),
+        .gecko => |stats| std.debug.print("Gecko HP: {d}, Shield: {d}\n", .{ stats.hp, stats.shield }),
+    }
+}
