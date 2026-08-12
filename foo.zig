@@ -1,18 +1,48 @@
 const print = @import("std").debug.print;
 
-pub fn main() void {
-    // The approximate weight of the Space Shuttle upon liftoff
-    // (including boosters and fuel tank) was 4,480,000 lb.
-    //
-    // We'll convert this weight from pounds to metric units at a
-    // conversion of 0.453592 kg to the pound.
-    const shuttle_weight: f64 = 0.453592 * 4480e3;
+const Ingredient = enum {
+    chili,
+    macaroni,
+    tomato_sauce,
+    cheese,
+};
 
-    // By default, float values are formatted in standard decimal
-    // notation. Experiment with '{d}' and '{d:.3}' to see how
-    // decimal formatting works, or try '{e}' and '{e:.3}' for
-    // scientific notation.
-    // NOTE: The weight of the shuttle is a huge number, a scientific notation
-    // may be more appropriate.
-    print("Shuttle liftoff weight: {e:.3} metric tons\n", .{shuttle_weight / 1e3});
+const Food = struct {
+    name: []const u8,
+    requires: []const Ingredient,
+};
+
+const menu = [_]Food{
+    .{
+        .name = "Mac & Cheese",
+        .requires = &.{ .macaroni, .cheese },
+    },
+    .{
+        .name = "Chili Mac",
+        .requires = &.{ .chili, .macaroni },
+    },
+    .{
+        .name = "Pasta",
+        .requires = &.{ .macaroni, .tomato_sauce },
+    },
+    .{
+        .name = "Cheesy Chili",
+        .requires = &.{ .chili, .cheese },
+    },
+};
+pub fn main() void {
+    const wanted_ingredients = [_]Ingredient{ .chili, .cheese };
+
+    const meal = food_loop: for (menu) |food| {
+        for (food.requires) |req| {
+            for (wanted_ingredients) |want| {
+                if (req == want) break;
+            } else {
+                continue :food_loop;
+            }
+        }
+        break :food_loop food;
+    } else menu[0];
+
+    print("Enjoy your {s}!\n", .{meal.name});
 }
