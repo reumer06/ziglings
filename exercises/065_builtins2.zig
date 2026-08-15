@@ -58,7 +58,7 @@ pub fn main() void {
     // Oops! We cannot leave the 'me' and 'myself' fields
     // undefined. Please set them here:
     narcissus.me = &narcissus;
-    narcissus.??? = ???;
+    narcissus.myself = &narcissus;
 
     // This determines a "peer type" from three separate
     // references (they just happen to all be the same object).
@@ -70,7 +70,7 @@ pub fn main() void {
     //
     // The fix for this is very subtle, but it makes a big
     // difference!
-    const Type2 = narcissus.FetchTheMostBeautifulType();
+    const Type2 = Narcissus.FetchTheMostBeautifulType();
 
     // Now we print a pithy statement about Narcissus.
     print("A {s} loves all {s}es. ", .{
@@ -102,16 +102,16 @@ pub fn main() void {
     // Please complete these 'if' statements so that the field
     // name will not be printed if the field is of type 'void'
     // (which is a zero-bit type that takes up no space at all!):
-    if (field_???[???] != void) {
-        print(" {s}", .{field_???[???]});
+    if (field_types[0] != void) {
+        print(" {s}", .{field_names[0]});
     }
 
-    if (field_???[???] != void) {
-        print(" {s}", .{field_???[???]});
+    if (field_types[1] != void) {
+        print(" {s}", .{field_names[1]});
     }
 
-    if (field_???[???] != void) {
-        print(" {s}", .{field_???[???]});
+    if (field_types[2] != void) {
+        print(" {s}", .{field_names[2]});
     }
 
     // Yuck, look at all that repeated code above! I don't know
