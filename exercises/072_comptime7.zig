@@ -19,7 +19,7 @@ pub fn main() void {
     // Here is a string containing a series of arithmetic
     // operations and single-digit decimal values. Let's call
     // each operation and digit pair an "instruction".
-    const instructions = "+3 *5 -2 *2";
+    const instructions = "+3 *5 -2 *2"; 
 
     // Here is a u32 variable that will keep track of our current
     // value in the program at runtime. It starts at 0, and we
@@ -35,7 +35,7 @@ pub fn main() void {
     // at compile time.
     //
     // Please fix this to loop once per "instruction":
-    ??? (i < instructions.len) : (???) {
+    inline while (i < instructions.len) : (i += 3) {
 
         // This gets the digit from the "instruction". Can you
         // figure out why we subtract '0' from it?
