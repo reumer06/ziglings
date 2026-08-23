@@ -28,12 +28,12 @@ fn makeCreature(comptime count: usize, comptime fmt: []const u8) [count]Animal {
         start, // Ready to start a new animal.
         l, // This means we've seen an "l", so if we see an "m", we know it's a Llama.
     };
-    var state = State.start;
+    comptime var state = State.start;
 
     // We return an array of animals representing the creature. (This is why we
     // really needed the 'count' parameter. Arrays need a size.)
     var animals: [count]Animal = undefined;
-    var next_animal: usize = 0;
+    comptime var next_animal: usize = 0;
 
     inline for (fmt) |char| {
 
@@ -57,7 +57,10 @@ fn makeCreature(comptime count: usize, comptime fmt: []const u8) [count]Animal {
                 //
                 // What do you think happens with Gators? Do they join with
                 // other animals or is this an error?
-                'g' => ???,
+                'g' => {
+                    animals[next_animal] = .Gator;
+                    next_animal += 1;
+                },
 
                 else => @compileError(std.fmt.comptimePrint("No animal starts with '{c}'!", .{char})),
             },
@@ -67,9 +70,7 @@ fn makeCreature(comptime count: usize, comptime fmt: []const u8) [count]Animal {
                 'm' => {
                     animals[next_animal] = .Llama;
                     next_animal += 1;
-                    // Something is missing here. After we finish a Llama, we
-                    // need to be ready to _start_ over with a new animal...
-                    ???
+                    state = .start;
                 },
 
                 else => @compileError("Only llamas start with 'l'!"),
