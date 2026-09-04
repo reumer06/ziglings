@@ -21,7 +21,7 @@
 // This is fundamentally different from killing a thread -
 // the task gets a chance to clean up and return a value!
 //
-// Remember: both .await() and .cancel() block and return the
+// Remember: both .await() and .cancefl() block and return the
 // result. The only difference is that .cancel() also sends
 // the cancellation request. And both are idempotent — calling
 // either one again just returns the same result.
@@ -46,7 +46,7 @@ pub fn main(init: std.process.Init) !void {
 
     // We don't want to wait 10 seconds!
     // Which Future method requests cancellation AND returns the result?
-    const result = future.???(io);
+    const result = future.cancel(io);
 
     print("Task returned: {}\n", .{result});
 }

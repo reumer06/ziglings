@@ -52,7 +52,7 @@ pub fn main(init: std.process.Init) !void {
 
     // Wait for the first finisher.
     // What Select method returns the first completed result?
-    const winner = try sel.???();
+    const winner = try sel.await();
 
     switch (winner) {
         .hare => |msg| print("Hare: {s}\n", .{msg}),

@@ -38,7 +38,7 @@ pub fn main(init: std.process.Init) !void {
 
     // Wait for all tasks to finish.
     // What Group method blocks until all tasks complete?
-    try group.???(io);
+    try group.await(io);
 
     print("All tasks finished!\n", .{});
 }
