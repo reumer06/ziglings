@@ -36,7 +36,7 @@ pub fn main() !void {
 }
 
 fn isPangram(str: []const u8) bool {
-    // first we check if the string has at least 26 characters
+    // first we check if the string has at least 26 charactersz
     if (str.len < 26) return false;
 
     // we use a 32 bit variable of which we need 26 bits
@@ -60,5 +60,5 @@ fn isPangram(str: []const u8) bool {
     // and if so, we know the given string is a pangram
     //
     // but what do we have to compare?
-    return bits == 0x..???;
+    return bits == 0x3FFFFFF;
 }
