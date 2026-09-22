@@ -38,10 +38,10 @@ pub fn main(init: std.process.Init) !void {
         // there is a chance you might want to run this
         // program more than once and the path might already
         // have been created, so we'll have to handle this error
-        // by doing nothing
+        // by doing nothing 
         //
         // we want to catch error.PathAlreadyExists and do nothing
-        ??? => {},
+        error.PathAlreadyExists => {},
         // if there's any other unexpected error we just propagate it through
         else => return e,
     };
@@ -50,7 +50,7 @@ pub fn main(init: std.process.Init) !void {
     // wait a minute...
     // opening a directory might fail!
     // what should we do here?
-    var output_dir: std.Io.Dir = cwd.openDir(io, "output", .{});
+    var output_dir: std.Io.Dir = try cwd.openDir(io, "output", .{});
     defer output_dir.close(io);
 
     // we try to open the file `zigling.txt`,
@@ -61,7 +61,7 @@ pub fn main(init: std.process.Init) !void {
     // but here we are not yet done writing to the file
     // if only there were a keyword in Zig that
     // allowed you to "defer" code execution to the end of the scope...
-    file.close(io);
+    defer file.close(io);
 
     // you are not allowed to move these lines above the file closing line!
     var file_writer = file.writer(io, &.{});
