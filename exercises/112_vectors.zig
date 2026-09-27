@@ -121,8 +121,8 @@ fn calcMaxPairwiseDiffOld(list1: [4]f32, list2: [4]f32) f32 {
 
 const Vec4 = @Vector(4, f32);
 fn calcMaxPairwiseDiffNew(a: Vec4, b: Vec4) f32 {
-    const abs_diff_vec = ???;
-    const max_diff = @reduce(???, abs_diff_vec);
+    const abs_diff_vec = @abs(a - b);
+    const max_diff = @reduce(.Max, abs_diff_vec);
     return max_diff;
 }
 
@@ -146,6 +146,7 @@ pub fn main() void {
     print("Max difference (new fn): {d: >5.3}\n", .{mpd_new});
 }
 
-// Another cool feature of Vectors is repeating patterns.
+// Another cool feature of Vectors i
+// s repeating patterns.
 // Remember the arrays exercise from earlier where we created an array
 // by repeating a pattern? See `005_arrays2.zig`.

@@ -65,7 +65,7 @@ const PullRequestState = enum(u8) {
 pub fn main() void {
     // Oh no, your pull request keeps being rejected,
     // how would you fix it?
-    pr: switch (PullRequestState.Draft) {
+    pr: switch (PullRequestState.Merged) {
         PullRequestState.Draft => continue :pr PullRequestState.InReview,
         PullRequestState.InReview => continue :pr PullRequestState.Rejected,
         PullRequestState.Approved => continue :pr PullRequestState.Merged,
@@ -73,7 +73,7 @@ pub fn main() void {
             std.debug.print("The pull request has been rejected.\n", .{});
             return;
         },
-        PullRequestState.Merged => break, // Would you know where to break to?
+        PullRequestState.Merged => break :pr, // Would you know where to break to?
     }
     std.debug.print("The pull request has been merged.\n", .{});
 }
